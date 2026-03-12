@@ -3,6 +3,14 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: "http://10.0.72.161:5000/api/:path*",
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {
