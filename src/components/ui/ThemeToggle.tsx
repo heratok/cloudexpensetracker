@@ -1,11 +1,12 @@
 "use client";
 
-import { useTheme } from "@/context/ThemeContext";
-import { Moon, Sun, Monitor } from "lucide-react";
+import { motion } from "framer-motion";
+import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTheme } from "@/context/ThemeContext";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -13,46 +14,47 @@ export function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return (
-      <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-800 animate-pulse" />
-    );
+    return <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />;
   }
 
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  };
+
+  const isDark = resolvedTheme === "dark";
+
   return (
-    <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-full border border-gray-200 dark:border-gray-700">
-      <button
-        onClick={() => setTheme("light")}
-        className={`p-1.5 rounded-full transition-all ${
-          theme === "light"
-            ? "bg-white dark:bg-gray-600 text-yellow-500 shadow-sm"
-            : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-300"
-        }`}
-        aria-label="Light mode"
+    <motion.button
+      onClick={toggleTheme}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      className="relative flex items-center justify-center w-10 h-10 rounded-full bg-muted hover:bg-muted/80 border border-border transition-colors duration-200"
+      title={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+    >
+      <motion.div
+        initial={false}
+        animate={{
+          rotate: isDark ? 0 : 180,
+          scale: isDark ? 1 : 0,
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="absolute"
       >
-        <Sun size={16} />
-      </button>
-      <button
-        onClick={() => setTheme("system")}
-        className={`p-1.5 rounded-full transition-all ${
-          theme === "system"
-            ? "bg-white dark:bg-gray-600 text-blue-500 shadow-sm"
-            : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-300"
-        }`}
-        aria-label="System mode"
+        <Moon size={18} className="text-purple-500" />
+      </motion.div>
+
+      <motion.div
+        initial={false}
+        animate={{
+          rotate: isDark ? -180 : 0,
+          scale: isDark ? 0 : 1,
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="absolute"
       >
-        <Monitor size={16} />
-      </button>
-      <button
-        onClick={() => setTheme("dark")}
-        className={`p-1.5 rounded-full transition-all ${
-          theme === "dark"
-            ? "bg-white dark:bg-gray-600 text-purple-500 shadow-sm"
-            : "text-gray-500 hover:text-gray-900 dark:hover:text-gray-300"
-        }`}
-        aria-label="Dark mode"
-      >
-        <Moon size={16} />
-      </button>
-    </div>
+        <Sun size={18} className="text-yellow-500" />
+      </motion.div>
+    </motion.button>
   );
 }

@@ -23,7 +23,7 @@ const sizeClasses = {
 };
 
 export const Modal: React.FC<ModalProps> = ({
-  isOpen = true,
+  isOpen = false,
   onClose,
   title,
   size = "md",
@@ -31,44 +31,44 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   showCloseButton = true,
 }) => {
-  if (!isOpen) return null;
-
   return (
     <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-      >
+      {isOpen && (
         <motion.div
-          className={cn(
-            "bg-bg-card rounded-lg w-full max-h-[90vh] overflow-y-auto",
-            sizeClasses[size],
-            className,
-          )}
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          onClick={(e) => e.stopPropagation()}
+          className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={onClose}
         >
-          <div className="px-6 py-4 border-b border-border-primary flex justify-between items-center">
-            <h3 className="text-lg font-medium text-text-primary">{title}</h3>
-            {showCloseButton && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                icon={<X size={20} />}
-              />
+          <motion.div
+            className={cn(
+              "bg-bg-card rounded-lg w-full max-h-[90vh] overflow-y-auto",
+              sizeClasses[size],
+              className,
             )}
-          </div>
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-6 py-4 border-b border-border flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+              {showCloseButton && (
+                <button
+                  onClick={onClose}
+                  className="p-1 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <X size={20} />
+                </button>
+              )}
+            </div>
 
-          <div className="p-6">{children}</div>
+            <div className="p-6">{children}</div>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      )}
     </AnimatePresence>
   );
 };

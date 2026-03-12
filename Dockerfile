@@ -1,15 +1,15 @@
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 RUN apk add --no-cache libc6-compat
 
 # Install pnpm
 FROM base AS pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.32.1 --activate
 
 # Dependencies
 FROM pnpm AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile
 
 # Builder
 FROM pnpm AS builder
@@ -19,7 +19,7 @@ COPY . .
 RUN pnpm build
 
 # Production
-FROM node:18-alpine AS runner
+FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 

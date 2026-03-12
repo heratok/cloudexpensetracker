@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
   Edit2,
@@ -38,6 +38,7 @@ const MONTHS = [
 export default function BudgetPage() {
   const [budget, setBudget] = useState<IBudgetResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
@@ -51,14 +52,19 @@ export default function BudgetPage() {
   const fetchBudget = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await BudgetService.getCurrent();
       setBudget(data);
-    } catch (error: any) {
-      if (error?.response?.status === 404) {
+    } catch (err: any) {
+      if (err?.status === 404 || err?.response?.status === 404) {
         setBudget(null);
       } else {
-        console.error("Error fetching budget:", error);
-        addToast("Error al cargar el presupuesto", "error");
+        console.error("Error fetching budget:", err);
+        const errorMessage = err?.isNetworkError
+          ? "No se pudo conectar con el servidor. Verifica tu conexión."
+          : "Error al cargar el presupuesto";
+        setError(errorMessage);
+        addToast(errorMessage, "error");
       }
     } finally {
       setLoading(false);
@@ -321,87 +327,104 @@ export default function BudgetPage() {
         </div>
       )}
 
-      <Modal
-        onClose={() => setIsModalOpen(false)}
-        title={budget ? "Actualizar Presupuesto" : "Crear Presupuesto"}
-      >
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              Monto del Presupuesto
-            </label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={formData.amount}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  amount: parseFloat(e.target.value) || 0,
-                })
-              }
-              placeholder="0.00"
-              required
-            />
-          </div>
+      <AnimatePresence>
+        {isModalOpen && (
+          <Modal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            title={budget ? "Actualizar Presupuesto" : "Crear Presupuesto"}
+          >
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Monto del Presupuesto
+                </label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={formData.amount}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      amount: parseFloat(e.target.value) || 0,
+                    })
+                  }
+                  placeholder="0.00"
+                  required
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">Mes</label>
-              <select
-                value={formData.month}
-                onChange={(e) =>
-                  setFormData({ ...formData, month: parseInt(e.target.value) })
-                }
-                className="w-full px-3 py-2 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                {MONTHS.map((month, index) => (
-                  <option key={month} value={index + 1}>
-                    {month}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">Año</label>
-              <select
-                value={formData.year}
-                onChange={(e) =>
-                  setFormData({ ...formData, year: parseInt(e.target.value) })
-                }
-                className="w-full px-3 py-2 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              >
-                {[currentYear - 1, currentYear, currentYear + 1].map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Mes</label>
+                  <select
+                    value={formData.month}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        month: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    {MONTHS.map((month, index) => (
+                      <option key={month} value={index + 1}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Año</label>
+                  <select
+                    value={formData.year}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        year: parseInt(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-lg border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                  >
+                    {[currentYear - 1, currentYear, currentYear + 1].map(
+                      (year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+              </div>
 
-          <div className="flex gap-3 pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => setIsModalOpen(false)}
-              className="flex-1"
-            >
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting} className="flex-1">
-              {isSubmitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : budget ? (
-                "Actualizar"
-              ) : (
-                "Crear"
-              )}
-            </Button>
-          </div>
-        </form>
-      </Modal>
+              <div className="flex gap-3 pt-4">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1"
+                >
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : budget ? (
+                    "Actualizar"
+                  ) : (
+                    "Crear"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Modal>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -44,6 +44,7 @@ const CATEGORIES = [
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<IExpense[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [dateFrom, setDateFrom] = useState("");
@@ -69,6 +70,7 @@ export default function ExpensesPage() {
   const fetchExpenses = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
       const params: Record<string, string> = {};
       if (categoryFilter) params.category = categoryFilter;
       if (dateFrom) params.from = dateFrom;
@@ -76,9 +78,13 @@ export default function ExpensesPage() {
 
       const data = await ExpenseService.getAll(params);
       setExpenses(data);
-    } catch (error) {
-      console.error("Error fetching expenses:", error);
-      addToast("Error al cargar los gastos", "error");
+    } catch (err: any) {
+      console.error("Error fetching expenses:", err);
+      const errorMessage = err?.isNetworkError
+        ? "No se pudo conectar con el servidor. Verifica tu conexión."
+        : "Error al cargar los gastos";
+      setError(errorMessage);
+      addToast(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -316,6 +322,7 @@ export default function ExpensesPage() {
       <AnimatePresence>
         {isModalOpen && (
           <Modal
+            isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             title={editingExpense ? "Editar Gasto" : "Nuevo Gasto"}
           >
@@ -415,6 +422,7 @@ export default function ExpensesPage() {
       <AnimatePresence>
         {deleteModalOpen && (
           <Modal
+            isOpen={deleteModalOpen}
             onClose={() => setDeleteModalOpen(false)}
             title="Confirmar eliminación"
           >

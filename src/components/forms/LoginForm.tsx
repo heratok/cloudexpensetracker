@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -27,10 +28,14 @@ export function LoginForm() {
       const res = await AuthService.login(data);
       login(res.token, res.user);
       addToast("Inicio de sesión exitoso", "success");
-      window.location.assign("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err: any) {
-      const status = err?.response?.status || err?.status;
-      if (status === 401) {
+      const status = err?.status;
+      const isNetworkError = err?.isNetworkError;
+
+      if (isNetworkError) {
+        addToast(err.message || "No se pudo conectar con el servidor", "error");
+      } else if (status === 401) {
         addToast(
           "Credenciales inválidas. Verifica tu email y contraseña.",
           "error",
@@ -41,7 +46,10 @@ export function LoginForm() {
           "error",
         );
       } else {
-        addToast("Error del servidor. Intenta más tarde.", "error");
+        addToast(
+          err.message || "Error del servidor. Intenta más tarde.",
+          "error",
+        );
       }
     }
   };
@@ -85,17 +93,18 @@ export function LoginForm() {
         })}
       />
 
-      {/* Server error removed in favor of Toast */}
-
       <Button type="submit" fullWidth loading={isSubmitting} size="lg">
         {isSubmitting ? "Iniciando sesión..." : "Iniciar sesión"}
       </Button>
 
-      <p className="text-center text-sm text-text-secondary">
+      <p className="text-center text-sm text-muted-foreground">
         ¿No tienes cuenta?{" "}
-        <a href="/register" className="font-medium text-accent hover:underline">
+        <Link
+          href="/register"
+          className="font-medium text-primary hover:underline"
+        >
           Regístrate
-        </a>
+        </Link>
       </p>
     </form>
   );

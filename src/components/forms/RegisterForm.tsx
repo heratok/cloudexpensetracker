@@ -1,6 +1,7 @@
 "use client";
 
 import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
@@ -27,17 +28,20 @@ export function RegisterForm() {
       const res = await AuthService.register(data);
       login(res.token, res.user);
       addToast("Cuenta creada exitosamente", "success");
-      window.location.assign("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err: any) {
-      const status = err?.response?.status || err?.status;
-      const message = err?.response?.data?.message || err?.message;
+      const status = err?.status;
+      const isNetworkError = err?.isNetworkError;
+      const message = err?.message;
 
-      if (status === 400) {
-        addToast(message ?? "Datos inválidos. Revisa los campos.", "error");
+      if (isNetworkError) {
+        addToast(err.message || "No se pudo conectar con el servidor", "error");
+      } else if (status === 400) {
+        addToast(message || "Datos inválidos. Revisa los campos.", "error");
       } else if (status === 409) {
         addToast("Ya existe una cuenta con ese correo electrónico.", "error");
       } else {
-        addToast("Error del servidor. Intenta más tarde.", "error");
+        addToast(message || "Error del servidor. Intenta más tarde.", "error");
       }
     }
   };
@@ -94,17 +98,18 @@ export function RegisterForm() {
         })}
       />
 
-      {/* Server error removed in favor of Toast */}
-
       <Button type="submit" fullWidth loading={isSubmitting} size="lg">
         {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
       </Button>
 
-      <p className="text-center text-sm text-text-secondary">
+      <p className="text-center text-sm text-muted-foreground">
         ¿Ya tienes cuenta?{" "}
-        <a href="/login" className="font-medium text-accent hover:underline">
+        <Link
+          href="/login"
+          className="font-medium text-primary hover:underline"
+        >
           Iniciar sesión
-        </a>
+        </Link>
       </p>
     </form>
   );

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { NetworkStatus } from "@/components/ui/NetworkStatus";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
 
@@ -50,7 +51,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <ToastProvider>
+            <NetworkStatus />
+            {children}
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

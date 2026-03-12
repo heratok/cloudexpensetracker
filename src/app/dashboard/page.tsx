@@ -1,47 +1,55 @@
 "use client";
 
-import { Stat } from "@/components/ui/Stats";
-import { SimpleBarChart } from "@/components/ui/SimpleChart";
-import { Card } from "@/components/ui/Card";
-import { DollarSign, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { motion } from "framer-motion";
+import { DollarSign, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { Card } from "@/components/ui/Card";
+import { DataState } from "@/components/ui/DataState";
+import { SimpleBarChart } from "@/components/ui/SimpleChart";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { useEffect, useState } from "react";
+import { Stat } from "@/components/ui/Stats";
+import { useToast } from "@/context/ToastContext";
 import { ExpenseService } from "@/services/expense/ExpenseService";
 import type { IDashboardData, IExpense } from "@/types/expense";
-import { useToast } from "@/context/ToastContext";
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<IDashboardData | null>(null);
   const [expenses, setExpenses] = useState<IExpense[]>([]);
   const { addToast } = useToast();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [dashboardData, expensesData] = await Promise.all([
-          ExpenseService.getDashboardStats(),
-          ExpenseService.getAll({
-            from: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-              .toISOString()
-              .split("T")[0],
-          }),
-        ]);
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
 
-        setStats(dashboardData);
-        setExpenses(expensesData.slice(0, 5)); // Take last 5 for recent transactions
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-        addToast("Error al cargar los datos del dashboard", "error");
-      } finally {
-        setLoading(false);
-      }
-    };
+      const [dashboardData, expensesData] = await Promise.all([
+        ExpenseService.getDashboardStats(),
+        ExpenseService.getAll({
+          from: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
+            .toISOString()
+            .split("T")[0],
+        }),
+      ]);
 
-    fetchData();
+      setStats(dashboardData);
+      setExpenses(expensesData.slice(0, 5));
+    } catch (err: any) {
+      console.error("Failed to fetch dashboard data:", err);
+      const errorMessage = err?.isNetworkError
+        ? "No se pudo conectar con el servidor. Verifica tu conexión a internet."
+        : "Error al cargar los datos del dashboard";
+      setError(errorMessage);
+      addToast(errorMessage, "error");
+    } finally {
+      setLoading(false);
+    }
   }, [addToast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const statsData = [
     {
@@ -50,7 +58,6 @@ export default function DashboardPage() {
       icon: <Wallet className="w-6 h-6 text-primary" />,
       change: "Este mes",
     },
-    // We can add more stats if the API provides them, for now just monthly total is confirmed
   ];
 
   const chartData =
@@ -68,9 +75,13 @@ export default function DashboardPage() {
         </h2>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {loading
-          ? Array.from({ length: 1 }).map((_, i) => (
+      <DataState
+        isLoading={loading}
+        error={error}
+        onRetry={fetchData}
+        loadingComponent={
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 1 }).map((_, i) => (
               <Card key={i} className="p-6 space-y-2">
                 <div className="flex items-center gap-4">
                   <Skeleton className="h-12 w-12 rounded-full" />
@@ -80,19 +91,24 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </Card>
-            ))
-          : statsData.map((stat, index) => (
-              <Stat
-                key={stat.label}
-                label={stat.label}
-                value={stat.value}
-                icon={stat.icon}
-                change={stat.change}
-                delay={index * 0.1}
-                className="bg-card text-card-foreground"
-              />
             ))}
-      </div>
+          </div>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {statsData.map((stat, index) => (
+            <Stat
+              key={stat.label}
+              label={stat.label}
+              value={stat.value}
+              icon={stat.icon}
+              change={stat.change}
+              delay={index * 0.1}
+              className="bg-card text-card-foreground"
+            />
+          ))}
+        </div>
+      </DataState>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="col-span-4">
@@ -108,6 +124,10 @@ export default function DashboardPage() {
                   />
                 ))}
               </div>
+            </Card>
+          ) : error ? (
+            <Card className="h-full p-6 flex items-center justify-center">
+              <p className="text-muted-foreground">Error al cargar gráfico</p>
             </Card>
           ) : (
             <SimpleBarChart
