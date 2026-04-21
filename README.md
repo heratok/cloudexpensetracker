@@ -4,11 +4,13 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 This app now calls the backend directly from the browser.
 
-- Frontend base URL is configured with `NEXT_PUBLIC_API_BASE_URL`.
+- By default, frontend uses same-origin `/api`.
+- Optional override: set `NEXT_PUBLIC_API_BASE_URL` if you need a different host.
 
 Example `.env.local`:
 
 ```bash
+# Optional (only if you do not use same-origin /api routing)
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
 ```
 
