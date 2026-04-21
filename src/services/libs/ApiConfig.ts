@@ -1,5 +1,5 @@
 export const API_URLS = {
-  Base: process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:5000",
+  Base: "/api/proxy",
 };
 
 export const API_CONFIG = {

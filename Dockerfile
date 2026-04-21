@@ -13,7 +13,7 @@ FROM pnpm AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Estas dos líneas son la clave:
+# Estas dos lineas son la clave:
 ARG NEXT_PUBLIC_API_BASE
 ENV NEXT_PUBLIC_API_BASE=$NEXT_PUBLIC_API_BASE
 RUN pnpm build
