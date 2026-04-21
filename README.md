@@ -1,19 +1,18 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## API Proxy Configuration
+## API Configuration
 
-This app uses a Next.js proxy route at `/api/proxy/*` so the browser never calls the backend directly.
+This app now calls the backend directly from the browser.
 
-- Frontend base URL is fixed to `/api/proxy`.
-- Backend destination is configured with server env var `API_INTERNAL_BASE_URL`.
+- Frontend base URL is configured with `NEXT_PUBLIC_API_BASE_URL`.
 
 Example `.env.local`:
 
 ```bash
-API_INTERNAL_BASE_URL=http://localhost:5000
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
 ```
 
-In production, set `API_INTERNAL_BASE_URL` in your hosting platform environment variables.
+In production, set `NEXT_PUBLIC_API_BASE_URL` in your hosting platform environment variables.
 
 ## Getting Started
 
