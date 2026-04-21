@@ -1,11 +1,11 @@
 import Cookies from "js-cookie";
 import axios from "axios";
-import { API_CONFIG, API_URLS } from "./ApiConfig";
+import { API_URLS } from "./ApiConfig";
 
 export const baseApi = axios.create({
   baseURL: API_URLS.Base,
   timeout: 10000,
-  withCredentials: API_CONFIG.withCredentials,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },

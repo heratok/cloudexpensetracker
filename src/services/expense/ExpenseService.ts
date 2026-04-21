@@ -12,25 +12,25 @@ export class ExpenseService {
     from?: string;
     to?: string;
   }): Promise<IExpense[]> {
-    return ApiService.get<IExpense[]>("/api/expenses", { params });
+    return ApiService.get<IExpense[]>("/expenses", { params });
   }
 
   static async create(data: ICreateExpenseInput): Promise<IExpense> {
-    return ApiService.post<IExpense>("/api/expenses", data);
+    return ApiService.post<IExpense>("/expenses", data);
   }
 
   static async update(
     id: string,
     data: IUpdateExpenseInput,
   ): Promise<IExpense> {
-    return ApiService.put<IExpense>(`/api/expenses/${id}`, data);
+    return ApiService.put<IExpense>(`/expenses/${id}`, data);
   }
 
   static async delete(id: string): Promise<{ message: string }> {
-    return ApiService.delete<{ message: string }>(`/api/expenses/${id}`);
+    return ApiService.delete<{ message: string }>(`/expenses/${id}`);
   }
 
   static async getDashboardStats(): Promise<IDashboardData> {
-    return ApiService.get<IDashboardData>("/api/dashboard");
+    return ApiService.get<IDashboardData>("/dashboard");
   }
 }

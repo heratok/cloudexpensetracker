@@ -3,10 +3,10 @@ import { ApiService } from "@/services/libs/ApiService";
 
 export class AuthService {
   static async login(data: ILoginInput): Promise<IAuthResponse> {
-    return ApiService.post<IAuthResponse>("/api/auth/login", data);
+    return ApiService.post<IAuthResponse>("/auth/login", data);
   }
 
   static async register(data: IRegisterInput): Promise<IAuthResponse> {
-    return ApiService.post<IAuthResponse>("/api/auth/register", data);
+    return ApiService.post<IAuthResponse>("/auth/register", data);
   }
 }
