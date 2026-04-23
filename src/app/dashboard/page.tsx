@@ -59,7 +59,8 @@ export default function DashboardPage() {
     } finally {
       setExporting(false);
     }
-  };
+};
+  const statsData = [
     {
       label: "Gasto Total (Mes)",
       value: stats ? `$${stats.monthlyTotal.toFixed(2)}` : "$0.00",
