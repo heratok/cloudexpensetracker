@@ -43,4 +43,20 @@ export class ExpenseService {
       responseType: "blob",
     });
   }
+
+  static async exportAndDownload(params?: {
+    fechaInicio?: string;
+    fechaFin?: string;
+    categoria?: string;
+  }): Promise<void> {
+    const blob = await this.export(params);
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `gastos-${new Date().toISOString().split("T")[0]}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  }
 }
