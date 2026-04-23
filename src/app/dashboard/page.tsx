@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { DollarSign, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { DollarSign, Download, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { DataState } from "@/components/ui/DataState";
@@ -17,6 +17,8 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<IDashboardData | null>(null);
   const [expenses, setExpenses] = useState<IExpense[]>([]);
+  const [exporting, setExporting] = useState(false);
+  const [exportUrl, setExportUrl] = useState<string | null>(null);
   const { addToast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -45,13 +47,19 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [addToast]);
+}, [addToast]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  const statsData = [
+  const handleExport = async () => {
+    try {
+      setExporting(true);
+      await ExpenseService.export();
+      addToast("Exportación iniciada. Recibirás el enlace por email.", "success");
+    } catch (err: any) {
+      addToast("Error al iniciar exportación", "error");
+    } finally {
+      setExporting(false);
+    }
+  };
     {
       label: "Gasto Total (Mes)",
       value: stats ? `$${stats.monthlyTotal.toFixed(2)}` : "$0.00",
@@ -73,6 +81,14 @@ export default function DashboardPage() {
         <h2 className="text-3xl font-bold tracking-tight text-foreground">
           Dashboard
         </h2>
+        <button
+          onClick={handleExport}
+          disabled={exporting}
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50"
+        >
+          <Download className="w-4 h-4" />
+          {exporting ? "Exportando..." : "Exportar gastos"}
+        </button>
       </div>
 
       <DataState

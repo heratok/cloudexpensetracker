@@ -33,4 +33,12 @@ export class ExpenseService {
   static async getDashboardStats(): Promise<IDashboardData> {
     return ApiService.get<IDashboardData>("/dashboard");
   }
+
+  static async export(params?: {
+    fechaInicio?: string;
+    fechaFin?: string;
+    categoria?: string;
+  }): Promise<{ message: string }> {
+    return ApiService.post<{ message: string }>("/expenses/export", params || {});
+  }
 }
