@@ -18,7 +18,6 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<IDashboardData | null>(null);
   const [expenses, setExpenses] = useState<IExpense[]>([]);
   const [exporting, setExporting] = useState(false);
-  const [exportUrl, setExportUrl] = useState<string | null>(null);
   const { addToast } = useToast();
 
   const fetchData = useCallback(async () => {
@@ -28,11 +27,7 @@ export default function DashboardPage() {
 
       const [dashboardData, expensesData] = await Promise.all([
         ExpenseService.getDashboardStats(),
-        ExpenseService.getAll({
-          from: new Date(new Date().getFullYear(), new Date().getMonth(), 1)
-            .toISOString()
-            .split("T")[0],
-        }),
+        ExpenseService.getAll(),
       ]);
 
       setStats(dashboardData);
@@ -52,10 +47,21 @@ export default function DashboardPage() {
   const handleExport = async () => {
     try {
       setExporting(true);
-      await ExpenseService.export();
-      addToast("Exportación iniciada. Recibirás el enlace por email.", "success");
+      const csvBlob = await ExpenseService.export();
+      const objectUrl = window.URL.createObjectURL(csvBlob);
+      const anchor = document.createElement("a");
+      const today = new Date().toISOString().split("T")[0];
+
+      anchor.href = objectUrl;
+      anchor.download = `gastos-${today}.csv`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.URL.revokeObjectURL(objectUrl);
+
+      addToast("Archivo CSV descargado correctamente", "success");
     } catch (err: any) {
-      addToast("Error al iniciar exportación", "error");
+      addToast("Error al exportar gastos", "error");
     } finally {
       setExporting(false);
     }
@@ -196,7 +202,7 @@ export default function DashboardPage() {
                       </div>
                       <div>
                         <p className="font-medium text-foreground">
-                          {tx.description}
+                          {tx.description || "Sin descripción"}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {tx.category}
@@ -205,7 +211,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-red-600">
-                        -${tx.amount.toFixed(2)}
+                        -${Number(tx.amount || 0).toFixed(2)}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {new Date(tx.date).toLocaleDateString()}

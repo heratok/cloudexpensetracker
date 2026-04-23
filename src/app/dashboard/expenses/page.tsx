@@ -41,6 +41,12 @@ const CATEGORIES = [
   "Other",
 ];
 
+const getLocalDateInputValue = () => {
+  const now = new Date();
+  const tzOffsetMs = now.getTimezoneOffset() * 60 * 1000;
+  return new Date(now.getTime() - tzOffsetMs).toISOString().split("T")[0];
+};
+
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<IExpense[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +68,7 @@ export default function ExpensesPage() {
     amount: 0,
     category: "Food",
     description: "",
-    date: new Date().toISOString().split("T")[0],
+    date: getLocalDateInputValue(),
   });
 
   const { addToast } = useToast();
@@ -163,7 +169,7 @@ export default function ExpensesPage() {
       amount: 0,
       category: "Food",
       description: "",
-      date: new Date().toISOString().split("T")[0],
+      date: getLocalDateInputValue(),
     });
   };
 

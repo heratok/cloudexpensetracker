@@ -38,7 +38,9 @@ export class ExpenseService {
     fechaInicio?: string;
     fechaFin?: string;
     categoria?: string;
-  }): Promise<{ message: string }> {
-    return ApiService.post<{ message: string }>("/expenses/export", params || {});
+  }): Promise<Blob> {
+    return ApiService.post<Blob>("/expenses/export", params || {}, {
+      responseType: "blob",
+    });
   }
 }
