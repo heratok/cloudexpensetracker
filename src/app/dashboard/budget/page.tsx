@@ -132,11 +132,11 @@ export default function BudgetPage() {
             </Card>
           ))}
         </div>
-      ) : !budget ? (
+      ) : !budget.budget ? (
         <Card className="p-12 text-center">
           <Wallet className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-xl font-semibold mb-2">
-            No hay presupuesto configured
+            No hay presupuesto configurado
           </h3>
           <p className="text-muted-foreground mb-6">
             Crea un presupuesto para controlar tus gastos mensuales

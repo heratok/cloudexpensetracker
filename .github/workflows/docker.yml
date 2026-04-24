@@ -1,10 +1,13 @@
+# Workflow deshabilitado temporalmente
+# Para habilitar, cambiar nombre a docker.yml
+
 name: Docker Build and Push
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:   # 👈 agrega esto
+  workflow_dispatch:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/cloudexpensetracker
@@ -23,9 +26,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build imagen Docker
-        run: |
-          docker build \
-            -t ${{ env.IMAGE_NAME }}:latest .
+        run: docker build -t ${{ env.IMAGE_NAME }}:latest .
 
       - name: Subir imagen
         run: docker push ${{ env.IMAGE_NAME }}:latest
